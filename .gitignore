@@ -1,0 +1,10 @@
+node_modules
+package-lock.json
+
+db/token.json
+db/ultimo-nro-de-output.txt
+inputs/*.txt
+outputs/*.txt
+
+!inputs/ejemplo-1.txt
+!inputs/ejemplo-2.txt
