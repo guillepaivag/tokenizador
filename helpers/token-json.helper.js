@@ -1,6 +1,6 @@
-const { esMasculino, getFemenino, getMasculino } = require("./genero.helper");
-const { confirmar, seleccionarToken } = require("./inquirer");
-const { esSingular, getPlural, getSingular } = require("./singular-plural.helper");
+const { esMasculino, getFemenino, getMasculino } = require('./genero.helper');
+const { confirmar, seleccionarToken } = require('./inquirer');
+const { esSingular, getPlural, getSingular } = require('./singular-plural.helper');
 
 const agregarLexemaATokenJsonPorToken = async (globalData, token, lexema) => {  
   const lexemaSingular = esSingular(lexema) ? lexema : getSingular(lexema); 
@@ -43,13 +43,15 @@ const agregarLexemaATokenJsonPorToken = async (globalData, token, lexema) => {
     }
   }
 
-  if (globalData.config.automatizarSingularPlural && globalData.config.automatizarGenero) {
-    globalData.tokenJson[token][lexemaGeneroCantidad] = true;
-  } else {
-    const tokenSeleccionado = await seleccionarToken(lexemaGeneroCantidad, { agregarOpcionIgnorar: true });
-    if (tokenSeleccionado !== 'IGNORAR') {
-      const ok = globalData.config.noConfirmarAntesDeClasificar || await confirmar(`¿Quieres agregar ${ `${lexemaGeneroCantidad}`.green } en ${ `${tokenSeleccionado}`.green }? ${'\nSino, este lexema no se agregara a la base de datos.'}`);
-      if (ok) globalData.tokenJson[tokenSeleccionado][lexemaGeneroCantidad] = true;
+  if (!globalData.config.noAgregarSingularPlural && !globalData.config.noAgregarGenero) {
+    if (globalData.config.automatizarSingularPlural && globalData.config.automatizarGenero) {
+      globalData.tokenJson[token][lexemaGeneroCantidad] = true;
+    } else {
+      const tokenSeleccionado = await seleccionarToken(lexemaGeneroCantidad, { agregarOpcionIgnorar: true });
+      if (tokenSeleccionado !== 'IGNORAR') {
+        const ok = globalData.config.noConfirmarAntesDeClasificar || await confirmar(`¿Quieres agregar ${ `${lexemaGeneroCantidad}`.green } en ${ `${tokenSeleccionado}`.green }? ${'\nSino, este lexema no se agregara a la base de datos.'}`);
+        if (ok) globalData.tokenJson[tokenSeleccionado][lexemaGeneroCantidad] = true;
+      }
     }
   }
 

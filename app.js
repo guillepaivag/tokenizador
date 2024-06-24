@@ -1,19 +1,19 @@
-const path = require("path");
+const path = require('path');
 const {
   obtenerDatosPorArchivo,
   guardarDatosPorArchivo,
   crearArchivoOutput,
-} = require("./helpers/operacion-por-archivo.helper");
-const { seleccionarEntrada, seleccionarToken, confirmar, configurarProceso } = require("./helpers/inquirer");
-const { agregarLexemaATokenJsonPorToken } = require("./helpers/token-json.helper");
-const { inicializarDB } = require("./helpers/inicializacion-db.helper");
+} = require('./helpers/operacion-por-archivo.helper');
+const { seleccionarEntrada, seleccionarToken, confirmar, configurarProceso } = require('./helpers/inquirer');
+const { agregarLexemaATokenJsonPorToken } = require('./helpers/token-json.helper');
+const { inicializarDB } = require('./helpers/inicializacion-db.helper');
 
 // Inicializa la DB de la APP
 inicializarDB();
 
 // Numero de output generado, es el numero del output_<<N>>.txt
 const globalData = {
-  tokenJson: JSON.parse(obtenerDatosPorArchivo(path.join(__dirname, "db", "token.json"))),
+  tokenJson: JSON.parse(obtenerDatosPorArchivo(path.join(__dirname, 'db', 'token.json'))),
   nroArchivoDeSalida: 0,
   cantidadLexemasProcesados: {
     manualmente: 0,
@@ -43,29 +43,29 @@ const initialCounts = {
 const identificarTokenPorPalabra = (palabra = '', opciones = {}) => {
   const { incrementarCLP } = opciones;
 
-  if (globalData.tokenJson["ARTICULO"][palabra]) {
+  if (globalData.tokenJson['ARTICULO'][palabra]) {
     incrementarCLP ? globalData.cantidadLexemasProcesados.automaticamente++ : '';
-    return "ARTICULO";
-  } else if (globalData.tokenJson["SUSTANTIVO"][palabra]) {
+    return 'ARTICULO';
+  } else if (globalData.tokenJson['SUSTANTIVO'][palabra]) {
     incrementarCLP ? globalData.cantidadLexemasProcesados.automaticamente++ : '';
-    return "SUSTANTIVO";
-  } else if (globalData.tokenJson["VERBO"][palabra]) {
+    return 'SUSTANTIVO';
+  } else if (globalData.tokenJson['VERBO'][palabra]) {
     incrementarCLP ? globalData.cantidadLexemasProcesados.automaticamente++ : '';
-    return "VERBO";
-  } else if (globalData.tokenJson["ADJETIVO"][palabra]) {
+    return 'VERBO';
+  } else if (globalData.tokenJson['ADJETIVO'][palabra]) {
     incrementarCLP ? globalData.cantidadLexemasProcesados.automaticamente++ : '';
-    return "ADJETIVO";
-  } else if (globalData.tokenJson["ADVERBIO"][palabra]) {
+    return 'ADJETIVO';
+  } else if (globalData.tokenJson['ADVERBIO'][palabra]) {
     incrementarCLP ? globalData.cantidadLexemasProcesados.automaticamente++ : '';
-    return "ADVERBIO";
-  } else if (globalData.tokenJson["OTROS"][palabra]) {
+    return 'ADVERBIO';
+  } else if (globalData.tokenJson['OTROS'][palabra]) {
     incrementarCLP ? globalData.cantidadLexemasProcesados.automaticamente++ : '';
-    return "OTROS";
-  } else if (globalData.tokenJson["ERROR_LX"][palabra]) {
+    return 'OTROS';
+  } else if (globalData.tokenJson['ERROR_LX'][palabra]) {
     incrementarCLP ? globalData.cantidadLexemasProcesados.automaticamente++ : '';
-    return "ERROR_LX";
+    return 'ERROR_LX';
   }
-  return "no_reconocido";
+  return 'no_reconocido';
 };
 
 /**
@@ -73,7 +73,7 @@ const identificarTokenPorPalabra = (palabra = '', opciones = {}) => {
  * @param {*} text
  * @returns
  */
-function tokenizar(textoEntrada = "") {
+const tokenizar = (textoEntrada = '') => {
   // Separado por espacios, comas y puntos
   const palabras = textoEntrada.split(/[\s,\.\?¿:]+/);
   const data = [];
@@ -91,10 +91,10 @@ function tokenizar(textoEntrada = "") {
   });
 
   return data;
-}
+};
 
 // funcion para consultar al usuario por aquellos lexemas que no se pudo clasificar automaticamente
-async function clasificarTokensDesconocidos(data) { 
+const clasificarTokensDesconocidos = async (data) => { 
   for (const item of data) {
     item.TOKEN = identificarTokenPorPalabra(item.LEXEMA);
     if (item.TOKEN === 'no_reconocido') {
@@ -118,12 +118,12 @@ async function clasificarTokensDesconocidos(data) {
   }
 
   // Guardamos todos los patrones en los archivos correspondientes
-  const dbTokenJson = path.join(__dirname, "db", "token.json");
+  const dbTokenJson = path.join(__dirname, 'db', 'token.json');
   guardarDatosPorArchivo(dbTokenJson, JSON.stringify(globalData.tokenJson));
 }
 
 // funcion que imprime las estadisticas finales del proceso
-function imprimirEstadisticasFinales() {
+const imprimirEstadisticasFinales = () => {
   const totalTokens =
     globalData.cantidadLexemasProcesados.automaticamente +
     globalData.cantidadLexemasProcesados.manualmente;
@@ -163,7 +163,7 @@ function imprimirEstadisticasFinales() {
 // contando la cantidad de archivos de salida output_<<N>>.txt del directorio
 const obtenerSiguienteNombreDeArchivoDeSalida = () => {
   // Obtener el ultimo nro de los output existentes y sumarle 1
-  const dirPath = path.join(__dirname, "db", "ultimo-nro-de-output.txt");
+  const dirPath = path.join(__dirname, 'db', 'ultimo-nro-de-output.txt');
   let ultimoNroDeOutput = obtenerDatosPorArchivo(dirPath);
   globalData.nroArchivoDeSalida = ++ultimoNroDeOutput;
 
@@ -173,7 +173,7 @@ const obtenerSiguienteNombreDeArchivoDeSalida = () => {
 };
 
 // funcion principal del proceso
-async function main() {
+const main = async () => {
   console.clear();
   console.log('========================'.cyan);
   console.log('      ¡Bienvenido!      '.cyan);
@@ -195,12 +195,14 @@ async function main() {
 
     // Se obtiene la entrada y la salida
     const entradaSeleccionada = await seleccionarEntrada();
-    if (entradaSeleccionada.procesoCancelacion) {
+    if (entradaSeleccionada.tipoProcesoSeleccionado === 'cancelacion') {
       console.log('======================='.cyan);
       console.log('     ¡Hasta luego!     '.cyan);
       console.log('======================='.cyan);
       return;
-    };
+    } else if (['actualizacion', 'actualizacion_config'].includes(entradaSeleccionada.tipoProcesoSeleccionado)) {
+      continue;
+    }
     const inputPath = path.join(__dirname, 'inputs', entradaSeleccionada.entrada);
     const outputPath = obtenerSiguienteNombreDeArchivoDeSalida();
 

@@ -22,16 +22,16 @@ const excepcionesMasculino = {
 
 // Los lexemas invariables, son masculinos y femeninos al mismo tiempo
 const invariables = [
-  "joven",
-  "atleta",
-  "estudiante",
-  "artista",
-  "cantante",
-  "deportista",
-  "modelo",
-  "piloto",
-  "taxista",
-  "periodista",
+  'joven',
+  'atleta',
+  'estudiante',
+  'artista',
+  'cantante',
+  'deportista',
+  'modelo',
+  'piloto',
+  'taxista',
+  'periodista',
 ];
 
 const esMasculino = (palabra = '') => {
@@ -69,9 +69,9 @@ const getMasculino = (palabra = '') => {
 
   // Definir las reglas de conversión
   const reglas = [
-    { femenino: /a$/, masculino: "o" },
-    { femenino: /ora$/, masculino: "or" },
-    { femenino: /ona$/, masculino: "ón" },
+    { femenino: /a$/, masculino: 'o' },
+    { femenino: /ora$/, masculino: 'or' },
+    { femenino: /ona$/, masculino: 'ón' },
   ];
 
   // Aplicar las reglas en orden
@@ -94,9 +94,9 @@ const getFemenino = (palabra = '') => {
 
   // Definir las reglas de conversión
   const reglas = [
-    { masculino: /o$/, femenino: "a" },
-    { masculino: /or$/, femenino: "ora" },
-    { masculino: /ón$/, femenino: "ona" },
+    { masculino: /o$/, femenino: 'a' },
+    { masculino: /or$/, femenino: 'ora' },
+    { masculino: /ón$/, femenino: 'ona' },
   ];
 
   // Aplicar las reglas en orden

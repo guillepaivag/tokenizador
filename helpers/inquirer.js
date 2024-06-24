@@ -1,20 +1,22 @@
-const path = require("path");
-const inquirer = require("inquirer");
-require("colors");
+const path = require('path');
+const inquirer = require('inquirer');
+require('colors');
 
 const {
   leerNombreDeArchivosPorDirectorio,
-} = require("./operacion-por-archivo.helper");
+} = require('./operacion-por-archivo.helper');
 
 const seleccionarEntrada = async () => {
   const dirPath = path.join(__dirname, '..', 'inputs');
 
   let entrada = '';
-  let procesoCancelacion = false;
+  let tipoProcesoSeleccionado = 'procesamiento_entrada';
   let continuarProceso = true;
 
   do {
-    let entradas = []
+    let entradas = [];
+
+    // Verifica que existan archivos (entradas) para procesar
     do {
       entradas = await leerNombreDeArchivosPorDirectorio(dirPath);
 
@@ -27,6 +29,7 @@ const seleccionarEntrada = async () => {
     const choices = [
       { name: `Cancelar`.red, value: 'cancelar' },
       { name: `Actualizar entradas`.yellow, value: 'actualizar' },
+      { name: `Actualizar configuraciones`.cyan, value: 'actualizar_config' },
       ...entradas.map((v, i, array) => {
         return {
           name: `${`${i+1}.`.green} ${v}`,
@@ -37,9 +40,9 @@ const seleccionarEntrada = async () => {
 
     const preguntas = [
       {
-        type: "list",
-        name: "seleccion",
-        message: "Seleccione una entrada:",
+        type: 'list',
+        name: 'seleccion',
+        message: 'Seleccione una entrada:',
         choices,
       },
     ];
@@ -49,22 +52,26 @@ const seleccionarEntrada = async () => {
     if (seleccion === 'cancelar') {
       entrada = '';
       continuarProceso = false;
-      procesoCancelacion = true;
+      tipoProcesoSeleccionado = 'cancelacion';
     } else if (seleccion === 'actualizar') {
       entrada = '';
       continuarProceso = true;
-      procesoCancelacion = false;
+      tipoProcesoSeleccionado = 'actualizacion';
+    } else if (seleccion === 'actualizar_config') {
+      entrada = '';
+      continuarProceso = true;
+      tipoProcesoSeleccionado = 'actualizacion_config';
     } else {
       entrada = seleccion;
       continuarProceso = false;
-      procesoCancelacion = false;
+      tipoProcesoSeleccionado = 'procesamiento_entrada';
     }
   } while (continuarProceso);
 
   return {
     entrada,
     continuarProceso,
-    procesoCancelacion
+    tipoProcesoSeleccionado,
   }
 };
 
@@ -87,8 +94,8 @@ const seleccionarToken = async (lexema = '', opciones = {}) => {
   
   const preguntas = [
     {
-      type: "list",
-      name: "token",
+      type: 'list',
+      name: 'token',
       message: `${tipoDeLexema} ¿Qué tipo de token es ${ `${lexema}`.green }?`,
       choices,
     },
@@ -101,8 +108,8 @@ const seleccionarToken = async (lexema = '', opciones = {}) => {
 const confirmar = async (message) => {
   const question = [
     {
-      type: "confirm",
-      name: "ok",
+      type: 'confirm',
+      name: 'ok',
       message,
     },
   ];
@@ -129,15 +136,13 @@ const configurarProceso = async (globalData = {}) => {
     { name: `No confirmar antes de clasificar un lexema`, value: 'noConfirmarAntesDeClasificar' },
     { name: `No agregar singular/plural `, value: 'noAgregarSingularPlural' },
     { name: `No agregar género`, value: 'noAgregarGenero' },
-    { name: `Automatizar clasificación de singular/plural ${'BETA'.inverse}`, value: 'automatizarSingularPlural' },
-    { name: `Automatizar clasificación de género ${'BETA'.inverse}`, value: 'automatizarGenero' },
   ];
   
   const preguntas = [
     {
-      type: "checkbox",
-      name: "configs",
-      message: `Configure su proceso`,
+      type: 'checkbox',
+      name: 'configs',
+      message: `Configure su proceso \n${`Si marcas algún ${'[No agregar ...]'.green}${' entonces en la siguiente configuración habrán opciones deshabilitadas.'.gray}\n`.gray}`,
       choices: choices.map(v => {
         return {
           ...v,
@@ -148,6 +153,48 @@ const configurarProceso = async (globalData = {}) => {
   ];
 
   const { configs } = await inquirer.prompt(preguntas);
+
+  // 
+  if (!configs.includes('noAgregarSingularPlural') || !configs.includes('noAgregarGenero')) {
+    const choices2 = [
+      { name: `Automatizar clasificación de singular/plural ${'BETA'.inverse}`, value: 'automatizarSingularPlural' },
+      { name: `Automatizar clasificación de género ${'BETA'.inverse}`, value: 'automatizarGenero' },
+    ];
+
+    // if (!configs.includes('noAgregarSingularPlural')) {
+    //   choices2.push({ name: `Automatizar clasificación de singular/plural ${'BETA'.inverse}`, value: 'automatizarSingularPlural' });
+    // }
+
+    // if (!configs.includes('noAgregarGenero')) {
+    //   choices2.push({ name: `Automatizar clasificación de género ${'BETA'.inverse}`, value: 'automatizarGenero' });
+    // }
+    
+    const preguntas2 = [
+      {
+        type: 'checkbox',
+        name: 'configs2',
+        message: `Seleccione los procesos que desea automatizar`,
+        choices: choices2.map(v => {
+          return {
+            ...v,
+            checked: globalData.config[v.value],
+            disabled: () => {
+              if (v.value === 'automatizarSingularPlural') {
+                return configs.includes('noAgregarSingularPlural');
+              }
+              if (v.value === 'automatizarGenero') {
+                return configs.includes('noAgregarGenero');
+              }
+            }
+          }
+        }),
+      },
+    ];
+  
+    const { configs2 } = await inquirer.prompt(preguntas2);
+    configs2.map(v => configs.push(v));
+  }
+
 
   for (const config of Object.keys(globalData.config)) {
     globalData.config[config] = configs.includes(config);

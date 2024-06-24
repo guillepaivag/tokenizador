@@ -2,6 +2,7 @@ node_modules
 package-lock.json
 
 db/token.json
+db/ejemplo-de-token-json.json
 db/ultimo-nro-de-output.txt
 inputs/*.txt
 outputs/*.txt

@@ -52,7 +52,7 @@ const leerNombreDeArchivosPorDirectorio = async (dirPath) => {
 const crearArchivoOutput = (outputPath, data) => {
   const output = data
     .map((item) => `${item.TOKEN}, ${item.LEXEMA}, ${item.POSICION}`)
-    .join("\n");
+    .join('\n');
   fs.writeFileSync(outputPath, output);
 };
 
